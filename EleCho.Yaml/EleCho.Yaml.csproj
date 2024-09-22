@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EleCho.Compiler\EleCho.Compiler.csproj" />
+    <ProjectReference Include="..\EleCho.Compiler\EleCho.Compiling.csproj" />
   </ItemGroup>
   
 </Project>

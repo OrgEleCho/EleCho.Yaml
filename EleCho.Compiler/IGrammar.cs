@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace EleCho.Compiler
+namespace EleCho.Compiling
 {
     public interface IGrammar
     {
         public int RequireCount { get; }
-        public Type TargetType { get; }
 
-        public bool CanConstruct(ReadOnlySpan<ISyntax> syntaxes);
-        public ISyntax Construct(ReadOnlySpan<ISyntax> syntaxes);
+        public bool CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes);
+        public IEnumerable<ISyntax> Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes);
     }
 }

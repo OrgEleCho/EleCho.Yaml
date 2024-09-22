@@ -2,16 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace EleCho.Compiler
+namespace EleCho.Compiling
 {
-    public class ParsingResult
+    public class ParsingQueue : IEnumerable<ISyntax>
     {
         private ISyntax[] _storage = [];
         private int _count;
 
         public int Capacity => _storage.Length;
-
         public int Count => _count;
+
+        public bool EndOfFile => Count > 0 && GetTail(0) is EndOfFile;
 
         private void EnsureCapacity(int requiredCapacity)
         {
@@ -67,13 +68,14 @@ namespace EleCho.Compiler
             {
                 _count--;
                 _storage[_count] = default!;
+                count--;
             }
         }
 
         public ISyntax GetTail(int index)
         {
             if (index < 0 || 
-                index > _count)
+                index >= _count)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -81,7 +83,7 @@ namespace EleCho.Compiler
             return _storage[_count - 1 - index];
         }
 
-        public ReadOnlySpan<ISyntax> GetTails(int count)
+        public ReadOnlyMemory<ISyntax> GetTails(int count, int offset)
         {
             if (count == 0)
             {
@@ -89,13 +91,29 @@ namespace EleCho.Compiler
             }
 
             if (count < 0 ||
-                count > _count)
+                count + offset > _count)
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            int startIndex = _count - count;
-            return _storage.AsSpan().Slice(startIndex, count);
+            int startIndex = _count - count - offset;
+            return _storage.AsMemory().Slice(startIndex, count);
         }
+
+        public ReadOnlyMemory<ISyntax> GetTails(int count)
+        {
+            return GetTails(count, 0);
+        }
+
+        public IEnumerator<ISyntax> GetEnumerator()
+        {
+            for (int i = 0; i < _count; i++)
+            {
+                yield return _storage[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
     }
 }

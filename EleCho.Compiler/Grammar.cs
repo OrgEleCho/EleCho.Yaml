@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EleCho.Compiler
+namespace EleCho.Compiling
 {
     public abstract class Grammar<TInput, TResult> : IGrammar
         where TInput : ISyntax
         where TResult : ISyntax
     {
         int IGrammar.RequireCount => 1;
-        Type IGrammar.TargetType => typeof(TResult);
 
-        public abstract bool CanConstruct(TInput input);
-        public abstract TResult Construct(TInput input);
-        bool IGrammar.CanConstruct(ReadOnlySpan<ISyntax> syntaxes)
+        public abstract bool CanConstruct(GrammarContext context, TInput input);
+        public abstract IEnumerable<TResult> Construct(GrammarContext context, TInput input);
+        bool IGrammar.CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes)
         {
             if (syntaxes.Length != 1)
             {
@@ -21,7 +20,7 @@ namespace EleCho.Compiler
             }
 
             if (syntaxes[0] is not TInput input1 ||
-                !CanConstruct(input1))
+                !CanConstruct(context, input1))
             {
                 return false;
             }
@@ -29,9 +28,19 @@ namespace EleCho.Compiler
             return true;
         }
 
-        ISyntax IGrammar.Construct(ReadOnlySpan<ISyntax> syntaxes)
+        IEnumerable<ISyntax> IGrammar.Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes)
         {
-            return Construct((TInput)syntaxes[0]);
+            var result = Construct(context, (TInput)syntaxes.Span[0]);
+
+            if (result is null)
+            {
+                yield break;
+            }
+
+            foreach (var syntax in result)
+            {
+                yield return syntax;
+            }
         }
     }
 
@@ -41,11 +50,10 @@ namespace EleCho.Compiler
         where TResult : ISyntax
     {
         int IGrammar.RequireCount => 2;
-        Type IGrammar.TargetType => typeof(TResult);
 
-        public abstract bool CanConstruct(TInput1 input1, TInput2 input2);
-        public abstract TResult Construct(TInput1 input1, TInput2 input2);
-        bool IGrammar.CanConstruct(ReadOnlySpan<ISyntax> syntaxes)
+        public abstract bool CanConstruct(GrammarContext context, TInput1 input1, TInput2 input2);
+        public abstract IEnumerable<TResult> Construct(GrammarContext context, TInput1 input1, TInput2 input2);
+        bool IGrammar.CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes)
         {
             if (syntaxes.Length != 2)
             {
@@ -54,7 +62,7 @@ namespace EleCho.Compiler
 
             if (syntaxes[0] is not TInput1 input1 ||
                 syntaxes[1] is not TInput2 input2 ||
-                !CanConstruct(input1, input2))
+                !CanConstruct(context, input1, input2))
             {
                 return false;
             }
@@ -62,11 +70,21 @@ namespace EleCho.Compiler
             return true;
         }
 
-        ISyntax IGrammar.Construct(ReadOnlySpan<ISyntax> syntaxes)
+        IEnumerable<ISyntax> IGrammar.Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes)
         {
-            return Construct(
-                (TInput1)syntaxes[0],
-                (TInput2)syntaxes[1]);
+            var result = Construct(context,
+                (TInput1)syntaxes.Span[0],
+                (TInput2)syntaxes.Span[1]);
+
+            if (result is null)
+            {
+                yield break;
+            }
+
+            foreach (var syntax in result)
+            {
+                yield return syntax;
+            }
         }
     }
 
@@ -77,11 +95,10 @@ namespace EleCho.Compiler
         where TResult : ISyntax
     {
         int IGrammar.RequireCount => 3;
-        Type IGrammar.TargetType => typeof(TResult);
 
-        public abstract bool CanConstruct(TInput1 input1, TInput2 input2, TInput3 input3);
-        public abstract TResult Construct(TInput1 input1, TInput2 input2, TInput3 input3);
-        bool IGrammar.CanConstruct(ReadOnlySpan<ISyntax> syntaxes)
+        public abstract bool CanConstruct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3);
+        public abstract IEnumerable<TResult> Construct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3);
+        bool IGrammar.CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes)
         {
             if (syntaxes.Length != 3)
             {
@@ -91,7 +108,7 @@ namespace EleCho.Compiler
             if (syntaxes[0] is not TInput1 input1 ||
                 syntaxes[1] is not TInput2 input2 ||
                 syntaxes[2] is not TInput3 input3 ||
-                !CanConstruct(input1, input2, input3))
+                !CanConstruct(context, input1, input2, input3))
             {
                 return false;
             }
@@ -99,12 +116,22 @@ namespace EleCho.Compiler
             return true;
         }
 
-        ISyntax IGrammar.Construct(ReadOnlySpan<ISyntax> syntaxes)
+        IEnumerable<ISyntax> IGrammar.Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes)
         {
-            return Construct(
-                (TInput1)syntaxes[0],
-                (TInput2)syntaxes[1],
-                (TInput3)syntaxes[2]);
+            var result = Construct(context,
+                (TInput1)syntaxes.Span[0],
+                (TInput2)syntaxes.Span[1],
+                (TInput3)syntaxes.Span[2]);
+
+            if (result is null)
+            {
+                yield break;
+            }
+
+            foreach (var syntax in result)
+            {
+                yield return syntax;
+            }
         }
     }
 
@@ -116,11 +143,10 @@ namespace EleCho.Compiler
         where TResult : ISyntax
     {
         int IGrammar.RequireCount => 4;
-        Type IGrammar.TargetType => typeof(TResult);
 
-        public abstract bool CanConstruct(TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4);
-        public abstract TResult Construct(TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4);
-        bool IGrammar.CanConstruct(ReadOnlySpan<ISyntax> syntaxes)
+        public abstract bool CanConstruct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4);
+        public abstract IEnumerable<TResult> Construct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4);
+        bool IGrammar.CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes)
         {
             if (syntaxes.Length != 4)
             {
@@ -131,7 +157,7 @@ namespace EleCho.Compiler
                 syntaxes[1] is not TInput2 input2 ||
                 syntaxes[2] is not TInput3 input3 ||
                 syntaxes[3] is not TInput4 input4 ||
-                !CanConstruct(input1, input2, input3, input4))
+                !CanConstruct(context, input1, input2, input3, input4))
             {
                 return false;
             }
@@ -139,13 +165,23 @@ namespace EleCho.Compiler
             return true;
         }
 
-        ISyntax IGrammar.Construct(ReadOnlySpan<ISyntax> syntaxes)
+        IEnumerable<ISyntax> IGrammar.Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes)
         {
-            return Construct(
-                (TInput1)syntaxes[0],
-                (TInput2)syntaxes[1],
-                (TInput3)syntaxes[2],
-                (TInput4)syntaxes[3]);
+            var result = Construct(context,
+                (TInput1)syntaxes.Span[0],
+                (TInput2)syntaxes.Span[1],
+                (TInput3)syntaxes.Span[2],
+                (TInput4)syntaxes.Span[3]);
+
+            if (result is null)
+            {
+                yield break;
+            }
+
+            foreach (var syntax in result)
+            {
+                yield return syntax;
+            }
         }
     }
 
@@ -158,11 +194,10 @@ namespace EleCho.Compiler
         where TResult : ISyntax
     {
         int IGrammar.RequireCount => 5;
-        Type IGrammar.TargetType => typeof(TResult);
 
-        public abstract bool CanConstruct(TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5);
-        public abstract TResult Construct(TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5);
-        bool IGrammar.CanConstruct(ReadOnlySpan<ISyntax> syntaxes)
+        public abstract bool CanConstruct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5);
+        public abstract IEnumerable<TResult> Construct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5);
+        bool IGrammar.CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes)
         {
             if (syntaxes.Length != 5)
             {
@@ -174,7 +209,7 @@ namespace EleCho.Compiler
                 syntaxes[2] is not TInput3 input3 ||
                 syntaxes[3] is not TInput4 input4 ||
                 syntaxes[4] is not TInput5 input5 ||
-                !CanConstruct(input1, input2, input3, input4, input5))
+                !CanConstruct(context, input1, input2, input3, input4, input5))
             {
                 return false;
             }
@@ -182,14 +217,24 @@ namespace EleCho.Compiler
             return true;
         }
 
-        ISyntax IGrammar.Construct(ReadOnlySpan<ISyntax> syntaxes)
+        IEnumerable<ISyntax> IGrammar.Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes)
         {
-            return Construct(
-                (TInput1)syntaxes[0],
-                (TInput2)syntaxes[1],
-                (TInput3)syntaxes[2],
-                (TInput4)syntaxes[3],
-                (TInput5)syntaxes[4]);
+            var result = Construct(context,
+                (TInput1)syntaxes.Span[0],
+                (TInput2)syntaxes.Span[1],
+                (TInput3)syntaxes.Span[2],
+                (TInput4)syntaxes.Span[3],
+                (TInput5)syntaxes.Span[4]);
+
+            if (result is null)
+            {
+                yield break;
+            }
+
+            foreach (var syntax in result)
+            {
+                yield return syntax;
+            }
         }
     }
 
@@ -203,12 +248,11 @@ namespace EleCho.Compiler
         where TResult : ISyntax
     {
         int IGrammar.RequireCount => 6;
-        Type IGrammar.TargetType => typeof(TResult);
 
-        public abstract bool CanConstruct(TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5, TInput6 input6);
-        public abstract TResult Construct(TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5, TInput6 input6);
+        public abstract bool CanConstruct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5, TInput6 input6);
+        public abstract IEnumerable<TResult> Construct(GrammarContext context, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4, TInput5 input5, TInput6 input6);
 
-        bool IGrammar.CanConstruct(ReadOnlySpan<ISyntax> syntaxes)
+        bool IGrammar.CanConstruct(GrammarContext context, ReadOnlySpan<ISyntax> syntaxes)
         {
             if (syntaxes.Length != 6)
             {
@@ -221,7 +265,7 @@ namespace EleCho.Compiler
                 syntaxes[3] is not TInput4 input4 ||
                 syntaxes[4] is not TInput5 input5 ||
                 syntaxes[5] is not TInput6 input6 ||
-                !CanConstruct(input1, input2, input3, input4, input5, input6))
+                !CanConstruct(context, input1, input2, input3, input4, input5, input6))
             {
                 return false;
             }
@@ -229,15 +273,25 @@ namespace EleCho.Compiler
             return true;
         }
 
-        ISyntax IGrammar.Construct(ReadOnlySpan<ISyntax> syntaxes)
+        IEnumerable<ISyntax> IGrammar.Construct(GrammarContext context, ReadOnlyMemory<ISyntax> syntaxes)
         {
-            return Construct(
-                (TInput1)syntaxes[0],
-                (TInput2)syntaxes[1],
-                (TInput3)syntaxes[2],
-                (TInput4)syntaxes[3],
-                (TInput5)syntaxes[4],
-                (TInput6)syntaxes[5]);
+            var result = Construct(context,
+                (TInput1)syntaxes.Span[0],
+                (TInput2)syntaxes.Span[1],
+                (TInput3)syntaxes.Span[2],
+                (TInput4)syntaxes.Span[3],
+                (TInput5)syntaxes.Span[4],
+                (TInput6)syntaxes.Span[5]);
+
+            if (result is null)
+            {
+                yield break;
+            }
+
+            foreach (var syntax in result)
+            {
+                yield return syntax;
+            }
         }
     }
 }
